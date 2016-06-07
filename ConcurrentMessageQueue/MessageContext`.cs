@@ -28,7 +28,7 @@
 
         public MessageId MessageId 
         {
-            get { return this.MessageId; }
+            get { return this._messageId; }
         }
         
     }
