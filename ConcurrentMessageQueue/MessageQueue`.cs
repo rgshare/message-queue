@@ -156,7 +156,7 @@ namespace ConcurrentMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    this._logger.Error("pull message error:" + ex.Message, ex);
+                    this._logger.Error("pull message error", ex);
                 }
             }
         }
