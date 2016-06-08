@@ -23,7 +23,7 @@ namespace ConcurrentMessageQueue
         private readonly ILogger _logger;
 
         private int _running;
-        private Func<TMessage, string> _keySelector;
+        private Func<TMessage, string> _messageIdSelector;
         private IMessageSource<TMessage> _messageFactory;
         private IMessageHandler<TMessage> _messageHandler;
 
@@ -41,7 +41,7 @@ namespace ConcurrentMessageQueue
             this._workerManager = new WorkerManager(logger, this._settings.WorkThreadCount);
             this._logger = logger;
 
-            InitKeySelector();
+            this._messageIdSelector = InitMessageIdSelector();
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace ConcurrentMessageQueue
 
             //源源不断的读取数据
             var pullMessageInterval = 0;
-            this._scheduleService.StartTask("Consumer.PullMessage", PullMessage, pullMessageInterval);
-            this._workerManager.Start("Consumer.ConsumingMessage", HandleMessage);
+            this._scheduleService.StartTask("Queue.PullMessage", PullMessage, pullMessageInterval);
+            this._workerManager.Start("Queue.ConsumingMessage", HandleMessage);
             return this;
         }
 
@@ -67,8 +67,7 @@ namespace ConcurrentMessageQueue
         /// </summary>
         public void Stop()
         {
-            this._scheduleService.StopTask("Consumer.PullMessage");
-            this._scheduleService.StopTask("Consumer.SendHeartbeat");
+            this._scheduleService.StopTask("Queue.PullMessage");
             this._workerManager.Stop();
         }
 
@@ -96,14 +95,13 @@ namespace ConcurrentMessageQueue
         /// <summary>
         /// 决定如何查找{TMessage}对象的主键属性，这个会用于稍后的重复消息过滤
         /// </summary>
-        private void InitKeySelector()
+        private Func<TMessage, string> InitMessageIdSelector()
         {
             var isMessageType = typeof(IMessage).IsAssignableFrom(typeof(TMessage));
 
             if (isMessageType)
             {
-                this._keySelector = message => ((IMessage)message).MessageId;
-                return;
+                return message => ((IMessage)message).MessageId;
             }
 
             var keys = (from prop in typeof(TMessage).GetProperties()
@@ -116,7 +114,7 @@ namespace ConcurrentMessageQueue
                 throw new InvalidOperationException(error);
             }
 
-            this._keySelector = message =>
+            return message =>
             {
                 return keys.Select(p => p.GetValue(message, null)).Aggregate(string.Empty, (a, b) => a + b);
             };
@@ -140,7 +138,7 @@ namespace ConcurrentMessageQueue
 
                     foreach (var message in prepareEnqueueMessages)
                     {
-                        var messageId = this._keySelector(message);
+                        var messageId = this._messageIdSelector(message);
                         if (processingMessageIds.Contains(messageId))
                         {
                             this._logger.Warn("the meesage is processing, ignore to equeue [MessageId:{0}]", messageId);
@@ -165,7 +163,7 @@ namespace ConcurrentMessageQueue
 
         private List<string> GetProcessingMessageIdsSnapshot()
         {
-            var processingItems = this._consumingMessageQueue.Select(this._keySelector).ToList();
+            var processingItems = this._consumingMessageQueue.Select(this._messageIdSelector).ToList();
             var handlingItems = this._handlingMessageDict.Keys.ToList();
             return processingItems.Concat(handlingItems).ToList();
         }
@@ -173,7 +171,7 @@ namespace ConcurrentMessageQueue
         private void HandleMessage()
         {
             var message = this._consumingMessageQueue.Take();
-            var messageId = this._keySelector(message);
+            var messageId = this._messageIdSelector(message);
 
             if (!this._handlingMessageDict.TryAdd(messageId, message))
             {
@@ -195,14 +193,14 @@ namespace ConcurrentMessageQueue
         private void LogMessageHandlingException(TMessage message, Exception exception)
         {
             this._logger.Error(string.Format(
-                "Message handling has exception, message info:[MessageId={0}]", this._keySelector(message)
+                "Message handling has exception, message info:[MessageId={0}]", this._messageIdSelector(message)
                 ), exception);
         }
 
         private void RemoveHandledMessage(TMessage consumingMessage)
         {
             TMessage consumedMessage;
-            if (!_handlingMessageDict.TryRemove(this._keySelector(consumingMessage), out consumedMessage))
+            if (!_handlingMessageDict.TryRemove(this._messageIdSelector(consumingMessage), out consumedMessage))
             {
                 //
             }
