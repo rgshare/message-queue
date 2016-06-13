@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using ConcurrentMessageQueue.Logging;
@@ -13,18 +12,16 @@ namespace ConcurrentMessageQueue
     /// 内存并发处理消息队列
     /// </summary>
     /// <typeparam name="TMessage">消息对象</typeparam>
-    public sealed class MessageQueue<TMessage>
+    internal class MessageQueue<TMessage>
     {
-        private readonly BlockingCollection<TMessage> _consumingMessageQueue;
-        private readonly ConcurrentDictionary<string, TMessage> _handlingMessageDict;
+        private readonly BlockingCollection<MessageWrapper<TMessage>> _consumingMessageQueue;
+        private readonly ConcurrentDictionary<MessageId, MessageWrapper<TMessage>> _handlingMessageDict;
         private readonly MessageQueueSetting _settings;
         private readonly Interval _scheduleService;
         private readonly WorkerManager _workerManager;
         private readonly ILogger _logger;
 
         private int _running;
-        private Func<TMessage, string> _messageIdSelector;
-        private IMessageSource<TMessage> _messageFactory;
         private IMessageHandler<TMessage> _messageHandler;
 
         /// <summary>
@@ -34,30 +31,26 @@ namespace ConcurrentMessageQueue
         /// <param name="logger">日志对象</param>
         public MessageQueue(MessageQueueSetting settings, ILogger logger)
         {
-            this._consumingMessageQueue = new BlockingCollection<TMessage>(new ConcurrentQueue<TMessage>());
-            this._handlingMessageDict = new ConcurrentDictionary<string, TMessage>();
+            var queue = new ConcurrentQueue<MessageWrapper<TMessage>>();
+            this._consumingMessageQueue = new BlockingCollection<MessageWrapper<TMessage>>(queue, settings.MaxConsumeringMessageCount);
+            this._handlingMessageDict = new ConcurrentDictionary<MessageId, MessageWrapper<TMessage>>();
             this._settings = settings;
             this._scheduleService = new Interval(logger);
             this._workerManager = new WorkerManager(logger, this._settings.WorkThreadCount);
             this._logger = logger;
-
-            this._messageIdSelector = InitMessageIdSelector();
         }
 
         /// <summary>
         /// 开始获取和处理消息，该方法仅能被调用一次
         /// </summary>
         /// <returns><see cref="MessageQueue{TMessage}"/></returns>
-        public MessageQueue<TMessage> Start()
+        public virtual MessageQueue<TMessage> Start()
         {
             if (Interlocked.CompareExchange(ref _running, 1, 0) == 1)
             {
-                throw new InvalidOperationException("Start() must only be called once.");
+                throw new InvalidOperationException("Start()方法只能被调用一次.");
             }
 
-            //源源不断的读取数据
-            var pullMessageInterval = 0;
-            this._scheduleService.StartTask("Queue.PullMessage", PullMessage, pullMessageInterval);
             this._workerManager.Start("Queue.ConsumingMessage", HandleMessage);
             return this;
         }
@@ -65,113 +58,56 @@ namespace ConcurrentMessageQueue
         /// <summary>
         /// 停止获取和处理消息
         /// </summary>
-        public void Stop()
+        public virtual void Stop()
         {
-            this._scheduleService.StopTask("Queue.PullMessage");
-            this._workerManager.Stop();
+            if (Interlocked.CompareExchange(ref _running, 0, 1) == 1)
+            {
+                this._scheduleService.StopTask("Queue.PullMessage");
+                this._workerManager.Stop();
+            }
         }
 
         /// <summary>
         /// 设置自定义的如何获取消息和如何处理消息
         /// </summary>
-        /// <param name="messageFactory">获取消息对象</param>
         /// <param name="messageHandler">处理消息对象</param>
         /// <returns></returns>
-        public MessageQueue<TMessage> SetMessageHandle(IMessageSource<TMessage> messageFactory, IMessageHandler<TMessage> messageHandler)
+        internal MessageQueue<TMessage> SetMessageHandle(IMessageHandler<TMessage> messageHandler)
         {
-            if (messageFactory == null)
-            {
-                throw new ArgumentNullException("messageFactory");
-            }
             if (messageHandler == null)
             {
                 throw new ArgumentNullException("messageHandler");
             }
-            this._messageFactory = messageFactory;
+            if (this._running == 1)
+            {
+                throw new InvalidOperationException("队列正在运行，不能进行此操作.");
+            }
             this._messageHandler = messageHandler;
             return this;
         }
 
-        /// <summary>
-        /// 决定如何查找{TMessage}对象的主键属性，这个会用于稍后的重复消息过滤
-        /// </summary>
-        private Func<TMessage, string> InitMessageIdSelector()
+        internal void Add(TMessage message, MessageId messageId)
         {
-            var isMessageType = typeof(IMessage).IsAssignableFrom(typeof(TMessage));
-
-            if (isMessageType)
-            {
-                return message => ((IMessage)message).MessageId;
-            }
-
-            var keys = (from prop in typeof(TMessage).GetProperties()
-                        where prop.GetCustomAttributes(typeof(KeyAttribute), true).Length > 0
-                        select prop).ToArray();
-
-            if (!keys.Any())
-            {
-                var error = string.Format("无法找到对象`{0}`的主键，请为该对象的主键属性添加`KeyAttribute`或实现`IMessage`接口", typeof(TMessage));
-                throw new InvalidOperationException(error);
-            }
-
-            return message =>
-            {
-                return keys.Select(p => p.GetValue(message, null)).Aggregate(string.Empty, (a, b) => a + b);
-            };
+            var messageWrapper = new MessageWrapper<TMessage> {MessageId = messageId, Message = message};
+            this._consumingMessageQueue.Add(messageWrapper);
         }
 
-
-        private void PullMessage()
+        protected int GetQueueCount()
         {
-            var min = this._settings.MinConsumeringMessageCount;
-            var max = this._settings.MaxConsumeringMessageCount;
-            var len = this._consumingMessageQueue.Count;
-            if (len < min)
-            {
-                try
-                {
-                    var processingMessageIds = GetProcessingMessageIdsSnapshot();//在某些情况下，这里返回的ids是不全面的
-                    var prepareEnqueueMessages = (_messageFactory.GetList(max - len) ?? new TMessage[0]).ToArray();
-                    var equeuedCount = 0;
-
-                    if (prepareEnqueueMessages.Length == 0) return;
-
-                    foreach (var message in prepareEnqueueMessages)
-                    {
-                        var messageId = this._messageIdSelector(message);
-                        if (processingMessageIds.Contains(messageId))
-                        {
-                            this._logger.Warn("the meesage is processing, ignore to equeue [MessageId:{0}]", messageId);
-                            continue;
-                        }
-
-                        this._consumingMessageQueue.Add(message);
-                        equeuedCount++;
-                    }
-                    this._logger.Info("pull {0} messages from data source, enqueue {1}, ignore {2}",
-                        prepareEnqueueMessages.Length,
-                        equeuedCount,
-                        prepareEnqueueMessages.Length - equeuedCount
-                        );
-                }
-                catch (Exception ex)
-                {
-                    this._logger.Error("pull message error", ex);
-                }
-            }
+            return this._consumingMessageQueue.Count;
         }
 
-        private List<string> GetProcessingMessageIdsSnapshot()
+        protected List<TMessage> GetProcessingMessageSnapshot()
         {
-            var processingItems = this._consumingMessageQueue.Select(this._messageIdSelector).ToList();
-            var handlingItems = this._handlingMessageDict.Keys.ToList();
-            return processingItems.Concat(handlingItems).ToList();
+            var processingItems = this._consumingMessageQueue.ToList();
+            var handlingItems = this._handlingMessageDict.Values.ToList();
+            return processingItems.Concat(handlingItems).Select(wrapper => wrapper.Message).ToList();
         }
 
         private void HandleMessage()
         {
             var message = this._consumingMessageQueue.Take();
-            var messageId = this._messageIdSelector(message);
+            var messageId = message.MessageId;
 
             if (!this._handlingMessageDict.TryAdd(messageId, message))
             {
@@ -181,7 +117,7 @@ namespace ConcurrentMessageQueue
 
             try
             {
-                this._messageHandler.Handle(new MessageContext<TMessage>(message, messageId));
+                this._messageHandler.Handle(new MessageContext<TMessage>(message.Message, message.MessageId));
                 this.RemoveHandledMessage(message);
             }
             catch (Exception ex)
@@ -190,21 +126,22 @@ namespace ConcurrentMessageQueue
             }
         }
 
-        private void LogMessageHandlingException(TMessage message, Exception exception)
+        private void LogMessageHandlingException(MessageWrapper<TMessage> message, Exception exception)
         {
             this._logger.Error(string.Format(
-                "Message handling has exception, message info:[MessageId={0}]", this._messageIdSelector(message)
+                "Message handling has exception, message info:[MessageId={0}]", message.MessageId
                 ), exception);
         }
 
-        private void RemoveHandledMessage(TMessage consumingMessage)
+        private void RemoveHandledMessage(MessageWrapper<TMessage> consumingMessage)
         {
-            TMessage consumedMessage;
-            if (!_handlingMessageDict.TryRemove(this._messageIdSelector(consumingMessage), out consumedMessage))
+            MessageWrapper<TMessage> consumedMessage;
+            if (!_handlingMessageDict.TryRemove(consumingMessage.MessageId, out consumedMessage))
             {
                 //
             }
         }
+        
     }
 
 }

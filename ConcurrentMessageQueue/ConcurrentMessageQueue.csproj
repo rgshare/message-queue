@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnonymousMessageHandle`.cs" />
+    <Compile Include="AnonymousMessageSource`.cs" />
+    <Compile Include="AsyncQueue.cs" />
     <Compile Include="MessageId.cs" />
     <Compile Include="MessageQueue`.cs" />
     <Compile Include="MessageQueueSetting.cs" />
@@ -51,6 +54,8 @@
     <Compile Include="IMessageHandler`.cs" />
     <Compile Include="IMessageSource`.cs" />
     <Compile Include="MessageContext`.cs" />
+    <Compile Include="MessageWrapper.cs" />
+    <Compile Include="PullMessageQueue`.cs" />
     <Compile Include="WorkerManager.cs" />
     <Compile Include="Logging\DefaultLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />

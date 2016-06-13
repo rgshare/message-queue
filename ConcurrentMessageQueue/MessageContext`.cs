@@ -12,10 +12,10 @@
         /// <summary>
         /// 构建MessageContext
         /// </summary>
-        internal MessageContext(TMessage message, string messageId)
+        internal MessageContext(TMessage message, MessageId messageId)
         {
             this._message = message;
-            this._messageId = new MessageId(messageId);
+            this._messageId = messageId;
         }
 
         /// <summary>

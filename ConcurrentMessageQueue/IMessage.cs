@@ -8,6 +8,6 @@
         /// <summary>
         /// 消息的id
         /// </summary>
-        string MessageId { get; }
+        MessageId MessageId { get; }
     }
 }
