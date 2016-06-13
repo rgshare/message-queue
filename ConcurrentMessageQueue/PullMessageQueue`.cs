@@ -8,7 +8,7 @@ namespace ConcurrentMessageQueue
 {
     internal class PullMessageQueue<TMessage> : MessageQueue<TMessage>
     {
-        private readonly MessageQueueSetting _settings;
+        private readonly AsyncQueueSetting _settings;
         private readonly ILogger _logger;
         private readonly IEqualityComparer<TMessage> _messageEqualityComparer;
         private readonly Interval _pullMessageService;
@@ -17,7 +17,7 @@ namespace ConcurrentMessageQueue
         private IMessageSource<TMessage> _messageSource;
         private TimeSpan _pullMessageInterval;
         
-        public PullMessageQueue(MessageQueueSetting settings, ILogger logger, IEqualityComparer<TMessage> messageEqualityComparer)
+        public PullMessageQueue(AsyncQueueSetting settings, ILogger logger, IEqualityComparer<TMessage> messageEqualityComparer)
             :base(settings, logger)
         {
             this._settings = settings;

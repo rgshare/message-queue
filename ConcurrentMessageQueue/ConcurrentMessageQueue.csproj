@@ -48,7 +48,7 @@
     <Compile Include="AsyncQueue.cs" />
     <Compile Include="MessageId.cs" />
     <Compile Include="MessageQueue`.cs" />
-    <Compile Include="MessageQueueSetting.cs" />
+    <Compile Include="AsyncQueueSetting.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="IMessageContext`.cs" />
     <Compile Include="IMessageHandler`.cs" />

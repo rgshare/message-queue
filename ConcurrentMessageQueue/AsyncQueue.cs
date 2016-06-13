@@ -77,7 +77,7 @@ namespace ConcurrentMessageQueue
 
     internal sealed class AsyncQueue<TMessage> : IAsyncQueueFactory<TMessage>, IPullAsyncQueue<TMessage>, IAsyncQueueStop
     {
-        private readonly MessageQueueSetting _setting;
+        private readonly AsyncQueueSetting _setting;
         private readonly ILogger _logger;
         private IMessageSource<TMessage> _source;
         private IMessageHandler<TMessage> _handler;
@@ -86,7 +86,7 @@ namespace ConcurrentMessageQueue
 
         private MessageQueue<TMessage> _messageQueue; 
 
-        internal AsyncQueue(MessageQueueSetting settings, ILogger logger)
+        internal AsyncQueue(AsyncQueueSetting settings, ILogger logger)
         {
             this._setting = settings;
             this._logger = logger;
@@ -166,7 +166,7 @@ namespace ConcurrentMessageQueue
         /// <typeparam name="TMessage">消息类型</typeparam>
         /// <param name="settings">队列的配置信息</param>
         /// <param name="logger">日志对象</param>
-        public static IAsyncQueueFactory<TMessage> Create<TMessage>(MessageQueueSetting settings, ILogger logger)
+        public static IAsyncQueueFactory<TMessage> Create<TMessage>(AsyncQueueSetting settings, ILogger logger)
         {
             return new AsyncQueue<TMessage>(settings, logger);
         }

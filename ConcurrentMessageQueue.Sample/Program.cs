@@ -11,7 +11,7 @@ namespace ConcurrentMessageQueue.Sample
 
         static void Main()
         {
-            var settings = MessageQueueSetting.Create(2, 50, 10);
+            var settings = AsyncQueueSetting.Create(2, 50, 10);
             var logger = new ConsoleLogger();
 
             var queue = AsyncQueue.Create<string>(settings, logger)

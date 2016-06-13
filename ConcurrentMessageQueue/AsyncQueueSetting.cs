@@ -5,16 +5,16 @@ namespace ConcurrentMessageQueue
     /// <summary>
     /// 消息队列相关参数设置
     /// </summary>
-    public sealed class MessageQueueSetting
+    public sealed class AsyncQueueSetting
     {
         private int _workThreadCount;
         private int _maxConsumeringMessageCount;
         private int _minConsumeringMessageCount;
 
         /// <summary>
-        /// 构建一个<see cref="MessageQueueSetting"/>对象
+        /// 构建一个<see cref="AsyncQueueSetting"/>对象
         /// </summary>
-        public MessageQueueSetting()
+        public AsyncQueueSetting()
         {
             WorkThreadCount = 5;
             MaxConsumeringMessageCount = 100;
@@ -22,14 +22,14 @@ namespace ConcurrentMessageQueue
         }
 
         /// <summary>
-        /// 构建一个<see cref="MessageQueueSetting"/>对象
+        /// 构建一个<see cref="AsyncQueueSetting"/>对象
         /// </summary>
         /// <param name="workThreadCount">工作线程数量</param>
         /// <param name="maxConsumeringMessageCount">可处理消息最大阈值</param>
         /// <param name="minConsumeringMessageCount">可处理消息最小阈值</param>
-        public static MessageQueueSetting Create(int workThreadCount, int maxConsumeringMessageCount, int minConsumeringMessageCount)
+        public static AsyncQueueSetting Create(int workThreadCount, int maxConsumeringMessageCount, int minConsumeringMessageCount)
         {
-            return new MessageQueueSetting
+            return new AsyncQueueSetting
             {
                 WorkThreadCount = workThreadCount,
                 MaxConsumeringMessageCount = maxConsumeringMessageCount,

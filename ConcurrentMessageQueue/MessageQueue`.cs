@@ -16,7 +16,7 @@ namespace ConcurrentMessageQueue
     {
         private readonly BlockingCollection<MessageWrapper<TMessage>> _consumingMessageQueue;
         private readonly ConcurrentDictionary<MessageId, MessageWrapper<TMessage>> _handlingMessageDict;
-        private readonly MessageQueueSetting _settings;
+        private readonly AsyncQueueSetting _settings;
         private readonly Interval _scheduleService;
         private readonly WorkerManager _workerManager;
         private readonly ILogger _logger;
@@ -29,7 +29,7 @@ namespace ConcurrentMessageQueue
         /// </summary>
         /// <param name="settings">消息队列设置</param>
         /// <param name="logger">日志对象</param>
-        public MessageQueue(MessageQueueSetting settings, ILogger logger)
+        public MessageQueue(AsyncQueueSetting settings, ILogger logger)
         {
             var queue = new ConcurrentQueue<MessageWrapper<TMessage>>();
             this._consumingMessageQueue = new BlockingCollection<MessageWrapper<TMessage>>(queue, settings.MaxConsumeringMessageCount);
