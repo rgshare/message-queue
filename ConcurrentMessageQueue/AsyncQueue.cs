@@ -114,14 +114,6 @@ namespace ConcurrentMessageQueue
             return this;
         }
         
-        void IAsyncQueueStop.Stop()
-        {
-            if (this._messageQueue != null)
-            {
-                this._messageQueue.Stop();
-            }
-        }
-
         IPullAsyncQueue<TMessage> IPullAsyncQueue<TMessage>.Distinct(IEqualityComparer<TMessage> messageEqualityComparer)
         {
             this._messageEqualityComparer = messageEqualityComparer;
@@ -149,10 +141,18 @@ namespace ConcurrentMessageQueue
             var queue = new PullMessageQueue<TMessage>(this._setting, this._logger, this._messageEqualityComparer);
             queue.SetMessageSource(this._source, this._interval);
             queue.SetMessageHandle(this._handler);
+            queue.Start();
             this._messageQueue = queue;
             return this;
         }
-        
+
+        void IAsyncQueueStop.Stop()
+        {
+            if (this._messageQueue != null)
+            {
+                this._messageQueue.Stop();
+            }
+        }
     }
 
     /// <summary>

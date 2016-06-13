@@ -13,14 +13,10 @@ namespace ConcurrentMessageQueue
         private readonly IEqualityComparer<TMessage> _messageEqualityComparer;
         private readonly Interval _pullMessageService;
 
+        private Func<TMessage, MessageId> _keySelector;
         private IMessageSource<TMessage> _messageSource;
         private TimeSpan _pullMessageInterval;
-
-        public PullMessageQueue(MessageQueueSetting settings, ILogger logger)
-            : this(settings, logger, null)
-        {
-        }
-
+        
         public PullMessageQueue(MessageQueueSetting settings, ILogger logger, IEqualityComparer<TMessage> messageEqualityComparer)
             :base(settings, logger)
         {
@@ -28,6 +24,7 @@ namespace ConcurrentMessageQueue
             this._logger = logger;
             this._messageEqualityComparer = messageEqualityComparer;
 
+            this._keySelector = DefaultKeySelector;
             this._pullMessageInterval = TimeSpan.Zero;
             this._pullMessageService = new Interval(logger);
         }
@@ -38,7 +35,18 @@ namespace ConcurrentMessageQueue
             this._pullMessageInterval = interval;
             return this;
         }
-        
+
+        public PullMessageQueue<TMessage> SetKeySelector(Func<TMessage, MessageId> keySelector)
+        {
+            this._keySelector = keySelector;
+            return this;
+        }
+
+        private MessageId DefaultKeySelector(TMessage message)
+        {
+            return new MessageId(Guid.NewGuid().ToString("N"));
+        }
+
         public override MessageQueue<TMessage> Start()
         {
             this._pullMessageService.StartTask("Queue.PullMessage", PullMessage, (int)this._pullMessageInterval.TotalSeconds);
@@ -69,15 +77,15 @@ namespace ConcurrentMessageQueue
                     
                     foreach (var message in prepareEnqueueMessages)
                     {
-                        var messageId = new MessageId(Guid.NewGuid().ToString("N"));
-
-                        if (this._messageEqualityComparer != null && ExistsMessage(message, processingMessages, this._messageEqualityComparer))
+                        var messageId = this._keySelector(message);
+                        
+                        if (this._messageEqualityComparer != null && processingMessages.Contains(message, this._messageEqualityComparer))
                         {
                             this._logger.Warn("ignore to equeue [MessageId:{0}]", messageId);
                             continue;
                         }
 
-                        base.Add(message, messageId);
+                        this.Add(message, messageId);
                         processingMessages.Add(message);
                         equeuedCount++;
                     }
@@ -94,18 +102,6 @@ namespace ConcurrentMessageQueue
                 }
             }
         }
-
-        private bool ExistsMessage(TMessage message, List<TMessage> processingMessages, IEqualityComparer<TMessage> messageEqualityComparer)
-        {
-            foreach (var processingMessage in processingMessages)
-            {
-                if (messageEqualityComparer.Equals(message, processingMessage))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
+        
     }
 }
