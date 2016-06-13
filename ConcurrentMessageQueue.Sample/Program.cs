@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,9 +7,9 @@ namespace ConcurrentMessageQueue.Sample
 {
     class Program
     {
-        private static int index = 0;
+        private static int _index;
 
-        static void Main(string[] args)
+        static void Main()
         {
             var settings = MessageQueueSetting.Create(2, 50, 10);
             var logger = new ConsoleLogger();
@@ -26,8 +27,8 @@ namespace ConcurrentMessageQueue.Sample
 
         static IEnumerable<string> CreateMessage(int count)
         {
-            var start = index;
-            index += count + 1;
+            var start = _index;
+            _index += count + 1;
             return Enumerable.Range(start, count).Select(i => i.ToString());
         }
     }
