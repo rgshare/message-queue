@@ -49,7 +49,8 @@ namespace ConcurrentMessageQueue
 
         public override MessageQueue<TMessage> Start()
         {
-            this._pullMessageService.StartTask("Queue.PullMessage", PullMessage, (int)this._pullMessageInterval.TotalMilliseconds);
+            var interval = (int) this._pullMessageInterval.TotalMilliseconds;
+            this._pullMessageService.StartTask("Queue.PullMessage", PullMessage, 0, interval);
 
             return base.Start();
         }
