@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ConcurrentMessageQueue.Logging;
 using ConcurrentMessageQueue.Scheduling;
 
 namespace ConcurrentMessageQueue

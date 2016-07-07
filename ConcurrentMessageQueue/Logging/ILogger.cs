@@ -1,46 +1,16 @@
-锘縰sing System;
-
-namespace ConcurrentMessageQueue.Logging
+namespace ConcurrentMessageQueue
 {
     /// <summary>
-    /// 鏃ュ織璁板綍
+    /// 日志记录
     /// </summary>
     public interface ILogger
     {
         /// <summary>
-        /// 璁板綍debug鏃ュ織
+        /// 记录日志
         /// </summary>
-        void Debug(string message);
-        /// <summary>
-        /// 璁板綍debug鏃ュ織
-        /// </summary>
-        void Debug(string format, params object[] args);
-
-        /// <summary>
-        /// 璁板綍info鏃ュ織
-        /// </summary>
-        void Info(string message);
-        /// <summary>
-        /// 璁板綍info鏃ュ織
-        /// </summary>
-        void Info(string format, params object[] args);
-
-        /// <summary>
-        /// 璁板綍warn鏃ュ織
-        /// </summary>
-        void Warn(string message);
-        /// <summary>
-        /// 璁板綍warn鏃ュ織
-        /// </summary>
-        void Warn(string format, params object[] args);
-
-        /// <summary>
-        /// 璁板綍error鏃ュ織
-        /// </summary>
-        void Error(string message);
-        /// <summary>
-        /// 璁板綍error鏃ュ織
-        /// </summary>
-        void Error(string message, Exception ex);
+        /// <param name="level">日志等级</param>
+        /// <param name="message">日志内容</param>
+        /// <param name="args">格式化需要的参数</param>
+        void Log(LogLevel level, string message, params object[] args);
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ConcurrentMessageQueue.Logging;
 using ConcurrentMessageQueue.Scheduling;
 
 namespace ConcurrentMessageQueue
@@ -82,7 +81,7 @@ namespace ConcurrentMessageQueue
                         
                         if (this._messageEqualityComparer != null && processingMessages.Contains(message, this._messageEqualityComparer))
                         {
-                            this._logger.Warn("ignore to equeue [MessageId:{0}]", messageId);
+                            this._logger.Log(LogLevel.Warning,  "ignore to equeue [MessageId:{0}]", messageId);
                             continue;
                         }
 
@@ -90,8 +89,8 @@ namespace ConcurrentMessageQueue
                         processingMessages.Add(message);
                         equeuedCount++;
                     }
-
-                    this._logger.Info("pull {0} messages from data source, enqueue {1}, ignore {2}",
+                    
+                    this._logger.Log(LogLevel.Info, "pull {0} messages from data source, enqueue {1}, ignore {2}",
                         prepareEnqueueMessages.Length,
                         equeuedCount,
                         prepareEnqueueMessages.Length - equeuedCount
@@ -99,7 +98,7 @@ namespace ConcurrentMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    this._logger.Error("pull message error", ex);
+                    this._logger.Log(LogLevel.Error, "pull message error " + Environment.NewLine + ex);
                 }
             }
         }

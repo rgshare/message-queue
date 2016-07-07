@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ConcurrentMessageQueue.Logging;
 using ConcurrentMessageQueue.Scheduling;
 
 namespace ConcurrentMessageQueue
@@ -111,7 +110,7 @@ namespace ConcurrentMessageQueue
 
             if (!this._handlingMessageDict.TryAdd(messageId, message))
             {
-                this._logger.Warn("ignore to handle message [MessageId:{0}]", messageId);
+                this._logger.Log(LogLevel.Warning, "ignore to handle message [MessageId:{0}]", messageId);
                 return;
             }
 
@@ -128,9 +127,9 @@ namespace ConcurrentMessageQueue
 
         private void LogMessageHandlingException(MessageWrapper<TMessage> message, Exception exception)
         {
-            this._logger.Error(string.Format(
-                "Message handling has exception, message info:[MessageId={0}]", message.MessageId
-                ), exception);
+            this._logger.Log(LogLevel.Error, 
+                "Message handling has exception, message info:[MessageId={0}]\r\n{1}", message.MessageId
+                , exception);
         }
 
         private void RemoveHandledMessage(MessageWrapper<TMessage> consumingMessage)

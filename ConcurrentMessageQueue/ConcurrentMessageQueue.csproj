@@ -46,6 +46,11 @@
     <Compile Include="AnonymousMessageHandle`.cs" />
     <Compile Include="AnonymousMessageSource`.cs" />
     <Compile Include="AsyncQueue.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="Logging\TraceLogger.cs" />
     <Compile Include="MessageId.cs" />
     <Compile Include="MessageQueue`.cs" />
     <Compile Include="AsyncQueueSetting.cs" />
@@ -57,8 +62,6 @@
     <Compile Include="MessageWrapper.cs" />
     <Compile Include="PullMessageQueue`.cs" />
     <Compile Include="WorkerManager.cs" />
-    <Compile Include="Logging\DefaultLogger.cs" />
-    <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheduling\Interval.cs" />
     <Compile Include="Scheduling\Worker.cs" />

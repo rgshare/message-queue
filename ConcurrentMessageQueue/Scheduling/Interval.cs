@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using ConcurrentMessageQueue.Logging;
 
 namespace ConcurrentMessageQueue.Scheduling
 {
@@ -78,7 +77,12 @@ namespace ConcurrentMessageQueue.Scheduling
                 catch (ObjectDisposedException) { }
                 catch (Exception ex)
                 {
-                    this._logger.Error(string.Format("Task has exception, name: {0}, due: {1}, period: {2}", task.Name, task.DueTime, task.Period), ex);
+                    this._logger.Log(LogLevel.Error, string.Format(
+                        "Task has exception, name: {0}, due: {1}, period: {2}\r\n{3}", 
+                        task.Name, 
+                        task.DueTime, 
+                        task.Period,
+                        ex));
                 }
                 finally
                 {
@@ -92,7 +96,9 @@ namespace ConcurrentMessageQueue.Scheduling
                     catch (ObjectDisposedException) { }
                     catch (Exception ex)
                     {
-                        this._logger.Error(string.Format("Timer change has exception, name: {0}, due: {1}, period: {2}", task.Name, task.DueTime, task.Period), ex);
+                        this._logger.Log(LogLevel.Error, string.Format(
+                            "Timer change has exception, name: {0}, due: {1}, period: {2}、\r\n{3}", 
+                            task.Name, task.DueTime, task.Period, ex));
                     }
                 }
             }

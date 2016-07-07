@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using ConcurrentMessageQueue.Logging;
 
 namespace ConcurrentMessageQueue.Scheduling
 {
@@ -75,13 +74,13 @@ namespace ConcurrentMessageQueue.Scheduling
                 }
                 catch (ThreadAbortException)
                 {
-                    this._logger.Info("Worker thread caught ThreadAbortException, try to resetting, actionName:" + this._name);
+                    this._logger.Log(LogLevel.Info, "Worker thread caught ThreadAbortException, try to resetting, actionName:{0}", this._name);
                     Thread.ResetAbort();
-                    this._logger.Info("Worker thread ThreadAbortException resetted, actionName:{0}" + this._name);
+                    this._logger.Log(LogLevel.Info, "Worker thread ThreadAbortException resetted, actionName:{0}", this._name);
                 }
                 catch (Exception ex)
                 {
-                    this._logger.Error(string.Format("Worker thread has exception, actionName:{0}", this._name), ex);
+                    this._logger.Log(LogLevel.Error, "Worker thread has exception, actionName:{0}\r\n", this._name, ex);
                 }
             }
         }
