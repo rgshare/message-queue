@@ -2,7 +2,7 @@
 
 namespace ConcurrentMessageQueue
 {
-    internal class AnonymousMessageHandle<TMessage>:IMessageHandler<TMessage>
+    internal class AnonymousMessageHandle<TMessage> : IMessageHandler<TMessage>
     {
         private readonly Action<IMessageContext<TMessage>> _handler;
 
