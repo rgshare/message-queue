@@ -1,4 +1,4 @@
-﻿namespace ConcurrentMessageQueue
+﻿namespace JobsQueue
 {
     /// <summary>
     /// 消息对象

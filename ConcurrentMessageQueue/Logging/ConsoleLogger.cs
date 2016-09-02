@@ -1,6 +1,6 @@
 using System;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 基于控制台的日志

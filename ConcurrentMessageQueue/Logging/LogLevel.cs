@@ -1,4 +1,4 @@
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 日志等级

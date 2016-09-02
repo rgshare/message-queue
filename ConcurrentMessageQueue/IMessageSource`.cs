@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 决定如何获取消息

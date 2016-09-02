@@ -45,9 +45,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConcurrentMessageQueue\ConcurrentMessageQueue.csproj">
+    <ProjectReference Include="..\ConcurrentMessageQueue\JobsQueue.csproj">
       <Project>{252b5c33-dbca-42b9-ad27-e11c2854b1b5}</Project>
-      <Name>ConcurrentMessageQueue</Name>
+      <Name>JobsQueue</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     internal class AnonymousMessageHandle<TMessage> : IMessageHandler<TMessage>
     {

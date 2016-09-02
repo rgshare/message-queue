@@ -1,4 +1,4 @@
-namespace ConcurrentMessageQueue.Logging
+namespace JobsQueue.Logging
 {
     internal class NullLogger
         : ILogger

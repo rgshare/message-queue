@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ConcurrentMessageQueue.Scheduling;
+using JobsQueue.Scheduling;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     internal class PullMessageQueue<TMessage> : MessageQueue<TMessage>
     {
@@ -70,8 +70,11 @@ namespace ConcurrentMessageQueue
                 try
                 {
                     var processingMessages = GetProcessingMessageSnapshot();
-                    var prepareEnqueueMessages = (this._messageSource.GetList(max - len) ?? new TMessage[0]).ToArray();
+                    var count = max - len;
                     var equeuedCount = 0;
+                    var prepareEnqueueMessages = count == 0 //count=0时无需从数据源拉取消息了
+                                                ? new TMessage[0]
+                                                : (this._messageSource.GetList(count) ?? new TMessage[0]).ToArray();
 
                     if (prepareEnqueueMessages.Length == 0) return;
                     

@@ -1,4 +1,4 @@
-﻿namespace ConcurrentMessageQueue
+﻿namespace JobsQueue
 {
     internal class MessageWrapper<TMessage>
     {

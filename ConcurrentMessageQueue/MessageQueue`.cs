@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ConcurrentMessageQueue.Scheduling;
+using JobsQueue.Scheduling;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 内存并发处理消息队列

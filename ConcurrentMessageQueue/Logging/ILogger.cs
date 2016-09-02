@@ -1,4 +1,4 @@
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// ÈÕÖ¾¼ÇÂ¼

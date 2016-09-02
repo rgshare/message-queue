@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace ConcurrentMessageQueue.Scheduling
+namespace JobsQueue.Scheduling
 {
     /// <summary>
     /// 开启一个重复执行的后台任务

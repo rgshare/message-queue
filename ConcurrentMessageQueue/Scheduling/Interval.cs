@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace ConcurrentMessageQueue.Scheduling
+namespace JobsQueue.Scheduling
 {
     internal sealed class Interval
     {

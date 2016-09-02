@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 异步队列工厂类
@@ -73,6 +73,7 @@ namespace ConcurrentMessageQueue
         /// </summary>
         void Stop();
     }
+    
 
     internal sealed class AsyncQueue<TMessage> : IAsyncQueueFactory<TMessage>, IPullAsyncQueue<TMessage>, IAsyncQueueStop
     {

@@ -1,4 +1,4 @@
-﻿namespace ConcurrentMessageQueue
+﻿namespace JobsQueue
 {
     /// <summary>
     /// 决定消息应该如何处理

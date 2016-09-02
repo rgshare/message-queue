@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace ConcurrentMessageQueue.Logging
+namespace JobsQueue.Logging
 {
     internal sealed class TraceLogger
         : ILogger

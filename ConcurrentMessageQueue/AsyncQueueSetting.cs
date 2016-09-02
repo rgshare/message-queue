@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     /// <summary>
     /// 消息队列相关参数设置

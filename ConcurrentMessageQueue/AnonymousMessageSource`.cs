@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ConcurrentMessageQueue
+namespace JobsQueue
 {
     internal class AnonymousMessageSource<TMessage> : IMessageSource<TMessage>
     {
